@@ -3,17 +3,17 @@ import "components/DayListItem.scss";
 import "components/DayListItem";
 import DayListItem from "components/DayListItem";
 
-export default function DayList(props) {
+export default function DayList({days, day, setDay}) {
 
   return (
     <ul>
-      {props.days.map(day => 
+      {days.map(dayItem => 
       <DayListItem
-      key={day.id}
-      name={day.name}
-      spots={day.spots}
-      selected={day.name === props.day}
-      setDay={props.setDay}
+      key={dayItem.id}
+      name={dayItem.name}
+      spots={dayItem.spots}
+      selected={dayItem.name === day}
+      setDay={setDay}
       />)}
     </ul>
   )
