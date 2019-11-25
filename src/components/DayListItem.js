@@ -3,9 +3,9 @@ import "components/DayListItem.scss";
 import classNames from 'classnames/bind';
 
 export default function DayListItem(props) {
-  let dayClass = 'day-list__item';
-  if (props.selected) dayClass += '--selected';
-  else if (props.spots === 0) dayClass += '--full';
+  let dayClass = classNames('day-list__item',
+  {'day-list__item--selected' : props.selected},
+  {'day-list__item--full' : props.spots === 0});
 
   function formatSpots(spots) {
     if (props.spots === 0) {
