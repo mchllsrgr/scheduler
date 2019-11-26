@@ -9,9 +9,11 @@ import Error from "components/Appointment/Error";
 import Form from "components/Appointment/Form";
 
 
-export default function Appointment(props) {
+export default function Appointment({id, time, interview}) {
   return (
     <article className="appointment">
+      <Header time={time} />
+      {(interview) ? <Show student={interview.student} interviewer={interview.interviewer} /> : <Empty />}
     </article>
   )
 }
