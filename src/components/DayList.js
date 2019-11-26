@@ -1,6 +1,5 @@
 import React from "react";
 import "components/DayListItem.scss";
-import "components/DayListItem";
 import DayListItem from "components/DayListItem";
 
 export default function DayList({days, day, setDay}) {
