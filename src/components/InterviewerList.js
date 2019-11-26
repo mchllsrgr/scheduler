@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import InterviewerListItem from "components/InterviewerListItem";
 import  "components/InterviewerList.scss";
 import "components/InterviewerListItem.scss";
@@ -15,7 +15,7 @@ export default function InterviewerList({interviewers, interviewer, setInterview
         name={interviewerItem.name}
         avatar={interviewerItem.avatar}
         selected={interviewerItem.id === interviewer}
-        setInterviewer={setInterviewer}
+        setInterviewer={event => setInterviewer(interviewerItem.id)}
         />)}
       </ul>
     </section>
