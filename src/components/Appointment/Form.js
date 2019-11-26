@@ -19,7 +19,7 @@ export default function Form({ name:initialName, interviewer:initialInt, intervi
   return (
     <main className="appointment__card appointment__card--create">
       <section className="appointment__card-left">
-        <form autoComplete="off">
+        <form autoComplete="off" onSubmit={event => event.preventDefault()}>
           <input
             className="appointment__create-input text--semi-bold"
             name="name"
@@ -34,7 +34,7 @@ export default function Form({ name:initialName, interviewer:initialInt, intervi
       <section className="appointment__card-right">
         <section className="appointment__actions">
           <Button danger onClick={cancel}>Cancel</Button>
-          <Button confirm onClick={onSave}>Save</Button>
+          <Button confirm onClick={() => onSave(name, interviewer)}>Save</Button>
         </section>
       </section>
     </main>
