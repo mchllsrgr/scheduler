@@ -5,54 +5,8 @@ import axios from "axios";
 import "components/Application.scss";
 import DayList from "components/DayList";
 import Appointment from "components/Appointment";
+import getAppointmentsForDay from "../helpers/selectors";
 
-
-const appointments = [
-  {
-    id: 1,
-    time: "12pm",
-  },
-  {
-    id: 2,
-    time: "1pm",
-    interview: {
-      student: "Lydia Miller-Jones",
-      interviewer: {
-        id: 1,
-        name: "Sylvia Palmer",
-        avatar: "https://i.imgur.com/LpaY82x.png",
-      }
-    }
-  },
-  {
-    id: 3,
-    time: "3pm",
-    interview: {
-      student: "Bob the Builder",
-      interviewer: {
-        id: 1,
-        name: "Sylvia Palmer",
-        avatar: "https://i.imgur.com/LpaY82x.png",
-      }
-    }
-  },
-  {
-    id: 4,
-    time: "11am",
-  },
-  {
-    id: 5,
-    time: "5pm",
-    interview: {
-      student: "Lydia Miller-Jones",
-      interviewer: {
-        id: 1,
-        name: "Sylvia Palmer",
-        avatar: "https://i.imgur.com/LpaY82x.png",
-      }
-    }
-  }
-];
 
 
 export default function Application(props) {
@@ -61,13 +15,8 @@ export default function Application(props) {
     days: [],
     appointments: {}
   })
-  const setDay = day => setState({...state, day});
-  // const setDays = days => setState(prev => ({...prev, days}));
-
-  // axios.get('/api/days')
-  // .then((response) => {
-  //   setDays(response.data);
-  // })
+  const setDay = day => setState(prev => ({...prev, day}));
+  const [appointments, setAppointments] = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -75,10 +24,20 @@ export default function Application(props) {
       Promise.resolve(axios.get('/api/appointments'))
     ])
     .then((all) => {
-      console.log(all);
+      setState(prev => ({
+        ...prev,
+        days: all[0].data,
+        appointments: all[1].data
+      }));
+      console.log(all[0].data)
+      
     })
     .catch((error) => console.log(error))
   }, [])
+
+  useEffect(() => {
+    setAppointments(getAppointmentsForDay(state, state.day))
+  }, [state])
 
   return (
     <main className="layout">

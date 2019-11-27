@@ -3,7 +3,6 @@ import "components/DayListItem.scss";
 import DayListItem from "components/DayListItem";
 
 export default function DayList({days, day, setDay}) {
-
   return (
     <ul>
       {days.map(dayItem => 
