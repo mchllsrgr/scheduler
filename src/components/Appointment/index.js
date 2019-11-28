@@ -14,7 +14,7 @@ const SHOW = "SHOW";
 const CREATE = "CREATE";
 const SAVING = "SAVING";
 
-export default function Appointment({id, time, interview, interviewers, bookInterview}) {
+export default function Appointment({id, time, interview, interviewers, bookInterview, cancelInterview}) {
   const { mode, transition, back } = useVisualMode( interview ? SHOW : EMPTY );
   
   function save(name, interviewer) {
@@ -26,6 +26,10 @@ export default function Appointment({id, time, interview, interviewers, bookInte
     bookInterview(id, interview)
       .then(() => transition(SHOW))
   }
+
+  function deleteInt(id) {
+    cancelInterview(id)
+  }
   
   return (
     <article className="appointment">
@@ -35,6 +39,7 @@ export default function Appointment({id, time, interview, interviewers, bookInte
         <Show
         student={interview.student}
         interviewer={interview.interviewer}
+        onDelete={deleteInt}
         />
       )}
       {mode === CREATE && (
