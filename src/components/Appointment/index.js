@@ -14,7 +14,7 @@ const SHOW = "SHOW";
 const CREATE = "CREATE";
 const SAVING = "SAVING";
 
-export default function Appointment({id, time, interview, onAdd}) {
+export default function Appointment({id, time, interview, interviewers, onAdd}) {
   const { mode, transition, back } = useVisualMode( interview ? SHOW : EMPTY );
   return (
     <article className="appointment">
@@ -28,9 +28,8 @@ export default function Appointment({id, time, interview, onAdd}) {
       )}
       {mode === CREATE && (
       <Form
-      name=""
       interviewer={2}
-      interviewers={[]}
+      interviewers={interviewers}
       onSave={() => transition(SAVING)}
       onCancel={() => back()}
       />
