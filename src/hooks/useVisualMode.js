@@ -11,8 +11,10 @@ export default function useVisualMode(initial) {
 
   function back() {
     let newHist = [...history].slice(0, history.length-1)
-    setHistory(newHist);
-    setMode(newHist[newHist.length - 1]);
+    if (newHist.length >= 1) {
+      setHistory(newHist);
+      setMode(newHist[newHist.length - 1]);
+    }
   }
 
   return { mode, transition, back };
