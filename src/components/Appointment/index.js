@@ -11,18 +11,29 @@ import useVisualMode from "hooks/useVisualMode";
 
 const EMPTY = "EMPTY";
 const SHOW = "SHOW";
+const CREATE = "CREATE";
+const SAVING = "SAVING";
 
 export default function Appointment({id, time, interview, onAdd}) {
   const { mode, transition, back } = useVisualMode( interview ? SHOW : EMPTY );
   return (
     <article className="appointment">
       <Header time={time} />
-      {mode === EMPTY && <Empty onAdd={onAdd} />}
+      {mode === EMPTY && <Empty onAdd={() => transition(CREATE)} />}
       {mode === SHOW && (
         <Show
         student={interview.student}
         interviewer={interview.interviewer}
         />
+      )}
+      {mode === CREATE && (
+      <Form
+      name="Lydia Miller-Jones"
+      interviewer={2}
+      interviewers={[]}
+      onSave={() => transition(SAVING)}
+      onCancel={() => back()}
+      />
       )}
     </article>
   )
