@@ -22,6 +22,7 @@ export default function Appointment({id, time, interview, interviewers, bookInte
       student: name,
       interviewer
     };
+    transition(SAVING);
     bookInterview(id, interview)
       .then(() => transition(SHOW))
   }
@@ -43,6 +44,9 @@ export default function Appointment({id, time, interview, interviewers, bookInte
       onSave={save}
       onCancel={() => back()}
       />
+      )}
+      {mode === SAVING && (
+        <Status message="Saving" />
       )}
     </article>
   )
