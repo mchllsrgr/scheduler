@@ -14,6 +14,7 @@ const SHOW = "SHOW";
 const CREATE = "CREATE";
 const SAVING = "SAVING";
 const DELETING = "DELETING";
+const CONFIRM = "CONFIRM";
 
 export default function Appointment({id, time, interview, interviewers, bookInterview, cancelInterview}) {
   const { mode, transition, back } = useVisualMode( interview ? SHOW : EMPTY );
@@ -33,6 +34,10 @@ export default function Appointment({id, time, interview, interviewers, bookInte
     cancelInterview(id)
       .then(() => transition(EMPTY))
   }
+
+  function confirmDelete() {
+    transition(CONFIRM);
+  }
   
   return (
     <article className="appointment">
@@ -42,7 +47,7 @@ export default function Appointment({id, time, interview, interviewers, bookInte
         <Show
         student={interview.student}
         interviewer={interview.interviewer}
-        onDelete={() => deleteInt(id)}
+        onDelete={() => confirmDelete()}
         />
       )}
       {mode === CREATE && (
@@ -54,6 +59,9 @@ export default function Appointment({id, time, interview, interviewers, bookInte
       )}
       {mode === SAVING && (
         <Status message="Saving" />
+      )}
+      {mode === CONFIRM && (
+        <Confirm message="Are you sure you would like to delete?" onConfirm={() => deleteInt(id)} onCancel={() => back()} />
       )}
       {mode === DELETING && (
         <Status message="Deleting" />
