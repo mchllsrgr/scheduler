@@ -22,7 +22,8 @@ export default function Appointment({id, time, interview, interviewers, bookInte
       student: name,
       interviewer
     };
-    bookInterview(interview);
+    bookInterview(id, interview)
+      .then(() => transition(SHOW))
   }
   
   return (
