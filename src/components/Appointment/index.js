@@ -28,7 +28,7 @@ export default function Appointment({id, time, interview, onAdd}) {
       )}
       {mode === CREATE && (
       <Form
-      name="Lydia Miller-Jones"
+      name=""
       interviewer={2}
       interviewers={[]}
       onSave={() => transition(SAVING)}
