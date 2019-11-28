@@ -10,11 +10,14 @@ import { getAppointmentsForDay, getInterview, getInterviewersForDay } from "../h
 
 
 export default function Application(props) {
+  // list of states
   const [state, setState] = useState({
     day: "Monday",
     days: [],
     appointments: {}
   })
+
+  // get/format data for appointments
   const setDay = day => setState(prev => ({...prev, day}));
   const appointments = getAppointmentsForDay(state, state.day);
   const interviewersList = getInterviewersForDay(state, state.day);
@@ -28,11 +31,16 @@ export default function Application(props) {
         time={appointment.time}
         interview={interview}
         interviewers={interviewersList}
+        bookInterview={bookInterview}
       />
     );
   });
-  
 
+  function bookInterview(id, interview) {
+    console.log(id, interview);
+  }
+  
+  // api calls
   useEffect(() => {
     Promise.all([
       Promise.resolve(axios.get('/api/days')),

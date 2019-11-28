@@ -14,8 +14,17 @@ const SHOW = "SHOW";
 const CREATE = "CREATE";
 const SAVING = "SAVING";
 
-export default function Appointment({id, time, interview, interviewers, onAdd}) {
+export default function Appointment({id, time, interview, interviewers, bookInterview}) {
   const { mode, transition, back } = useVisualMode( interview ? SHOW : EMPTY );
+  
+  function save(name, interviewer) {
+    const interview = {
+      student: name,
+      interviewer
+    };
+    bookInterview(interview);
+  }
+  
   return (
     <article className="appointment">
       <Header time={time} />
@@ -30,7 +39,7 @@ export default function Appointment({id, time, interview, interviewers, onAdd}) 
       <Form
       interviewer={2}
       interviewers={interviewers}
-      onSave={() => transition(SAVING)}
+      onSave={save}
       onCancel={() => back()}
       />
       )}
