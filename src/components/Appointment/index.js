@@ -16,9 +16,12 @@ const SAVING = "SAVING";
 const DELETING = "DELETING";
 const CONFIRM = "CONFIRM";
 const EDIT = "EDIT";
+const ERROR_SAVE = "ERROR_SAVE";
+const ERROR_DELETE = "ERROR_DELETE";
 
 export default function Appointment({id, time, interview, interviewers, bookInterview, cancelInterview}) {
   const { mode, transition, back } = useVisualMode( interview ? SHOW : EMPTY );
+  
   function save(name, interviewer) {
     const interview = {
       student: name,
@@ -27,12 +30,14 @@ export default function Appointment({id, time, interview, interviewers, bookInte
     transition(SAVING);
     bookInterview(id, interview)
       .then(() => transition(SHOW))
+      .catch(() => transition(ERROR_SAVE))
   }
 
   function deleteInt(id) {
     transition(DELETING);
     cancelInterview(id)
       .then(() => transition(EMPTY))
+      .catch(() => transition(ERROR_DELETE))
   }
 
   function confirmDelete() {
@@ -75,6 +80,12 @@ export default function Appointment({id, time, interview, interviewers, bookInte
       )}
       {mode === DELETING && (
         <Status message="Deleting" />
+      )}
+      {mode === ERROR_SAVE && (
+        <Error message="Could not save appointment" />
+      )}
+      {mode === ERROR_DELETE && (
+        <Error message="Could not delete appointment" />
       )}
     </article>
   )
