@@ -30,14 +30,14 @@ export default function Appointment({id, time, interview, interviewers, bookInte
     transition(SAVING);
     bookInterview(id, interview)
       .then(() => transition(SHOW))
-      .catch(() => transition(ERROR_SAVE))
+      .catch(() => transition(ERROR_SAVE, true))
   }
 
   function deleteInt(id) {
     transition(DELETING);
     cancelInterview(id)
       .then(() => transition(EMPTY))
-      .catch(() => transition(ERROR_DELETE))
+      .catch(() => transition(ERROR_DELETE, true))
   }
 
   function confirmDelete() {
@@ -82,10 +82,10 @@ export default function Appointment({id, time, interview, interviewers, bookInte
         <Status message="Deleting" />
       )}
       {mode === ERROR_SAVE && (
-        <Error message="Could not save appointment" />
+        <Error message="Could not save appointment" onClose={() => back()} />
       )}
       {mode === ERROR_DELETE && (
-        <Error message="Could not delete appointment" />
+        <Error message="Could not delete appointment" onClose={() => back()} />
       )}
     </article>
   )
