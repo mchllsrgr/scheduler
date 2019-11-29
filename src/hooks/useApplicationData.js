@@ -14,6 +14,7 @@ function reducer(state, action) {
   } else if (action.type === SET_INTERVIEW) {
     return {...state, appointments: action.value};
   } else if (action.type === UPDATE_SPOTS && action.method === 'add') {
+    const oldSpots = state.days[action.index].spots;
     return {...state,
       days: state.days.map((item, index) => {
         if (index !== action.index) {
@@ -21,12 +22,13 @@ function reducer(state, action) {
         } else {
           return {
             ...item,
-            spots: 1
+            spots: oldSpots - 1
           }
         }
       })
     }
   } else if (action.type === UPDATE_SPOTS && action.method === 'subtract') {
+    const oldSpots = state.days[action.index].spots;
     return {...state,
       days: state.days.map((item, index) => {
         if (index !== action.index) {
@@ -34,7 +36,7 @@ function reducer(state, action) {
         } else {
           return {
             ...item,
-            spots: 0
+            spots: oldSpots + 1
           }
         }
       })
