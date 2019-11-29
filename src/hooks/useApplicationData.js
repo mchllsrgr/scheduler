@@ -1,17 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useReducer, useEffect } from "react";
 import axios from "axios";
 
+const SET_DAY = "SET_DAY";
+const SET_APPLICATION_DATA = "SET_APPLICATION_DATA";
+const SET_INTERVIEW = "SET_INTERVIEW";
+
+
+function reducer(state, action) {
+  if (action.type === SET_DAY) {
+    return {...state, day: action.value};
+  } else if (action.type === SET_APPLICATION_DATA) {
+    return {...state, days: action.days, appointments: action.appointments, interviewers: action.interviewers};
+  } else if (action.type === SET_INTERVIEW) {
+    return {...state, appointments: action.value};
+  } else {
+    throw new Error(`Unsupported action type: ${action.type}`);
+  }
+}
 
 export default function useApplicationData() {
   // state
-  const [state, setState] = useState({
+  const [state, dispatch] = useReducer(reducer, {
     day: "Monday",
     days: [],
     appointments: {}
   })
 
   // actions to change state
-  const setDay = day => setState(prev => ({...prev, day}));
+  function setDay(day) {
+    dispatch({ type: "SET_DAY", value: day })
+  };
 
   function bookInterview(id, interview) {
     const appointment = {
@@ -23,7 +41,7 @@ export default function useApplicationData() {
       [id]: appointment
     };
     return axios.put(`/api/appointments/${id}`, { interview })
-      .then(() => setState({...state, appointments}))
+      .then(() => dispatch({type: SET_INTERVIEW, value: appointments}))
   }
 
   function cancelInterview(id) {
@@ -36,7 +54,7 @@ export default function useApplicationData() {
       [id]: deleted
     }
     return axios.delete(`/api/appointments/${id}`)
-      .then(() => setState({...state, appointmentsDeleted}))
+      .then(() => dispatch({type: SET_INTERVIEW, value: appointmentsDeleted}))
   }
 
     // api calls
@@ -47,12 +65,12 @@ export default function useApplicationData() {
         Promise.resolve(axios.get('/api/interviewers'))
       ])
       .then((all) => {
-        setState(prev => ({
-          ...prev,
+        dispatch({
+          type: SET_APPLICATION_DATA,
           days: all[0].data,
           appointments: all[1].data,
           interviewers: all[2].data
-        }));      
+        })
       })
       .catch((error) => console.log(error))
     }, [])
