@@ -51,8 +51,53 @@ export default function useApplicationData() {
   const [state, dispatch] = useReducer(reducer, {
     day: "Monday",
     days: [],
-    appointments: {}
-  })
+    appointments: {},
+    interviewers: {}
+  });
+
+    // api calls
+    useEffect(() => {
+      Promise.all([
+        Promise.resolve(axios.get('/api/days')),
+        Promise.resolve(axios.get('/api/appointments')),
+        Promise.resolve(axios.get('/api/interviewers'))
+      ])
+      .then((all) => {
+        console.log('days', all[0].data)
+        console.log('appt', all[1].data)
+        console.log('ints', all[2].data)
+        dispatch({
+          type: SET_APPLICATION_DATA,
+          days: all[0].data,
+          appointments: all[1].data,
+          interviewers: all[2].data
+        })
+      })
+      .catch((error) => console.log(error));
+        const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+        webSocket.onopen = function(e) {
+          webSocket.send('ping')
+        }
+        webSocket.onmessage = function(e) {
+          const received = JSON.parse(e.data)
+          
+          if (received.type === "SET_INTERVIEW") {
+            const updated = {
+              ...state.appointments[received.id],
+              interview: received.interview
+            };
+            const updateAppointments = {
+              ...state.appointments,
+              [received.id]: updated
+            }
+            dispatch({type: SET_INTERVIEW, value: updateAppointments})
+          }
+        }
+        
+  
+    }, [])
+
+
 
   // actions to change state
   function setDay(day) {
@@ -64,6 +109,8 @@ export default function useApplicationData() {
       ...state.appointments[id],
       interview: { ...interview }
     };
+    // console.log("NEW APPOINTMENT", appointment);
+    
     const appointments = {
       ...state.appointments,
       [id]: appointment
@@ -99,32 +146,7 @@ export default function useApplicationData() {
     }
   }
 
-  // api calls
-  useEffect(() => {
-    Promise.all([
-      Promise.resolve(axios.get('/api/days')),
-      Promise.resolve(axios.get('/api/appointments')),
-      Promise.resolve(axios.get('/api/interviewers'))
-    ])
-    .then((all) => {
-      dispatch({
-        type: SET_APPLICATION_DATA,
-        days: all[0].data,
-        appointments: all[1].data,
-        interviewers: all[2].data
-      })
-    })
-    .then(() => {
-      const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
-      webSocket.onopen = function(e) {
-        webSocket.send('ping')
-      }
-      webSocket.onmessage = function(e) {
-        console.log('Message Received: ', e.data)
-      }
-    })
-    .catch((error) => console.log(error))
-  }, [])
+
 
   return { state, setDay, bookInterview, cancelInterview }
 

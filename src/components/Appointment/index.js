@@ -48,7 +48,7 @@ export default function Appointment({id, time, interview, interviewers, bookInte
     <article className="appointment">
       <Header time={time} />
       {mode === EMPTY && <Empty onAdd={() => transition(CREATE)} />}
-      {mode === SHOW && (
+      {mode === SHOW && interview && (
         <Show
         student={interview.student}
         interviewer={interview.interviewer}
