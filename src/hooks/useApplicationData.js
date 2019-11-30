@@ -114,6 +114,15 @@ export default function useApplicationData() {
         interviewers: all[2].data
       })
     })
+    .then(() => {
+      const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+      webSocket.onopen = function(e) {
+        webSocket.send('ping')
+      }
+      webSocket.onmessage = function(e) {
+        console.log('Message Received: ', e.data)
+      }
+    })
     .catch((error) => console.log(error))
   }, [])
 
