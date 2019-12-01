@@ -1,9 +1,15 @@
 import React, { useReducer, useEffect } from "react";
 import axios from "axios";
+import { findDayByAppointment } from "../helpers/selectors";
 
 const SET_DAY = "SET_DAY";
 const SET_APPLICATION_DATA = "SET_APPLICATION_DATA";
 const SET_INTERVIEW = "SET_INTERVIEW";
+
+const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+webSocket.onopen = function(e) {
+  console.log('CONNECTED');
+}
 
 function reducer(state, action) {
   if (action.type === SET_DAY) {
@@ -11,11 +17,16 @@ function reducer(state, action) {
   } else if (action.type === SET_APPLICATION_DATA) {
     return {...state, days: action.days, appointments: action.appointments, interviewers: action.interviewers};
   } else if (action.type === SET_INTERVIEW && action.method === 'book') {
-    const oldSpots = state.days[action.index].spots;
+    const dayIndex = findDayByAppointment(action.id, state);
+    const oldSpots = state.days[dayIndex].spots;
+    const updateAppointments = {
+      ...state.appointments,
+      [action.id]: action.appointment
+      }
     return {...state,
-      appointments: action.appointments,
+      appointments: updateAppointments,
       days: state.days.map((item, index) => {
-        if (index !== action.index) {
+        if (index !== dayIndex) {
           return item
         } else {
           return {
@@ -26,11 +37,16 @@ function reducer(state, action) {
       })
     };
   } else if (action.type === SET_INTERVIEW && action.method === 'cancel') {
-    const oldSpots = state.days[action.index].spots;
+    const dayIndex = findDayByAppointment(action.id, state);
+    const oldSpots = state.days[dayIndex].spots;
+    const updateAppointments = {
+      ...state.appointments,
+      [action.id]: action.appointment
+      }
     return {...state,
-      appointments: action.appointments,
+      appointments: updateAppointments,
       days: state.days.map((item, index) => {
-        if (index !== action.index) {
+        if (index !== dayIndex) {
           return item
         } else {
           return {
@@ -52,7 +68,47 @@ export default function useApplicationData() {
     days: [],
     appointments: {},
     interviewers: {}
-  })
+  });
+
+    // api calls
+    useEffect(() => {
+      Promise.all([
+        Promise.resolve(axios.get('/api/days')),
+        Promise.resolve(axios.get('/api/appointments')),
+        Promise.resolve(axios.get('/api/interviewers'))
+      ])
+      .then((all) => {
+        dispatch({
+          type: SET_APPLICATION_DATA,
+          days: all[0].data,
+          appointments: all[1].data,
+          interviewers: all[2].data
+        })
+      })
+      .then(() => {
+        webSocket.onmessage = function(e) {
+          let received = JSON.parse(e.data)
+          if (received.type === "SET_INTERVIEW") {
+            const updated = {
+              interview: received.interview
+            };
+
+            let method = '';
+            if (received.interview === null) {
+              method = 'cancel';
+            } else {
+              method = 'book';
+            }
+            dispatch({type: "SET_INTERVIEW", id: received.id, appointment: updated, method: method})
+          }
+        }
+      })
+      .catch((error) => console.log(error));
+        
+  
+    }, [])
+
+
 
   // actions to change state
   function setDay(day) {
@@ -60,16 +116,13 @@ export default function useApplicationData() {
   };
 
   function bookInterview(id, interview) {
-    const appointment = {
+    const added = {
       ...state.appointments[id],
       interview: { ...interview }
     };
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment
-    };
+    
     return axios.put(`/api/appointments/${id}`, { interview })
-      .then(() => dispatch({type: SET_INTERVIEW, appointments: appointments, method: 'book', index: findDayByAppointment(id, state)}))
+      .then(() => webSocket.send(JSON.stringify({type: SET_INTERVIEW, appointment: added, id: id, method: 'book'})))
 
   }
 
@@ -78,42 +131,12 @@ export default function useApplicationData() {
       ...state.appointments[id],
       interview: null
     }
-    const appointmentsDeleted = {
-      ...state.appointments,
-      [id]: deleted
-    }
+
     return axios.delete(`/api/appointments/${id}`)
-      .then(() => dispatch({type: SET_INTERVIEW, appointments: appointmentsDeleted, method: 'cancel', index: findDayByAppointment(id, state)}))
+      .then(() => webSocket.send(JSON.stringify({type: SET_INTERVIEW, appointment: deleted, id: id, method: 'cancel'})))
   }
 
 
-  function findDayByAppointment(id, state) {
-    for (let i = 0; i < state.days.length; i++) {
-      for(let a of state.days[i].appointments) {
-        if (id === a) {
-          return i;
-        }
-      }
-    }
-  }
-
-  // api calls
-  useEffect(() => {
-    Promise.all([
-      Promise.resolve(axios.get('/api/days')),
-      Promise.resolve(axios.get('/api/appointments')),
-      Promise.resolve(axios.get('/api/interviewers'))
-    ])
-    .then((all) => {
-      dispatch({
-        type: SET_APPLICATION_DATA,
-        days: all[0].data,
-        appointments: all[1].data,
-        interviewers: all[2].data
-      })
-    })
-    .catch((error) => console.log(error))
-  }, [])
 
   return { state, setDay, bookInterview, cancelInterview }
 
