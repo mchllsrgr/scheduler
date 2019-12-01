@@ -4,18 +4,16 @@ import axios from "axios";
 const SET_DAY = "SET_DAY";
 const SET_APPLICATION_DATA = "SET_APPLICATION_DATA";
 const SET_INTERVIEW = "SET_INTERVIEW";
-const UPDATE_SPOTS = "UPDATE_SPOTS";
 
 function reducer(state, action) {
   if (action.type === SET_DAY) {
     return {...state, day: action.value};
   } else if (action.type === SET_APPLICATION_DATA) {
     return {...state, days: action.days, appointments: action.appointments, interviewers: action.interviewers};
-  } else if (action.type === SET_INTERVIEW) {
-    return {...state, appointments: action.value};
-  } else if (action.type === UPDATE_SPOTS && action.method === 'add') {
+  } else if (action.type === SET_INTERVIEW && action.method === 'add') {
     const oldSpots = state.days[action.index].spots;
     return {...state,
+      appointments: action.appointments,
       days: state.days.map((item, index) => {
         if (index !== action.index) {
           return item
@@ -26,10 +24,11 @@ function reducer(state, action) {
           }
         }
       })
-    }
-  } else if (action.type === UPDATE_SPOTS && action.method === 'subtract') {
+    };
+  } else if (action.type === SET_INTERVIEW && action.method === 'subtract') {
     const oldSpots = state.days[action.index].spots;
     return {...state,
+      appointments: action.appointments,
       days: state.days.map((item, index) => {
         if (index !== action.index) {
           return item
@@ -70,8 +69,7 @@ export default function useApplicationData() {
       [id]: appointment
     };
     return axios.put(`/api/appointments/${id}`, { interview })
-      .then(() => dispatch({type: SET_INTERVIEW, value: appointments}))
-      .then(() => dispatch({type: UPDATE_SPOTS, method: 'add', index: findDayByAppointment(id, state)}))
+      .then(() => dispatch({type: SET_INTERVIEW, appointments: appointments, method: 'add', index: findDayByAppointment(id, state)}))
 
   }
 
@@ -85,8 +83,7 @@ export default function useApplicationData() {
       [id]: deleted
     }
     return axios.delete(`/api/appointments/${id}`)
-      .then(() => dispatch({type: SET_INTERVIEW, value: appointmentsDeleted}))
-      .then(() => dispatch({type: UPDATE_SPOTS, method: 'subtract', index: findDayByAppointment(id, state)}))
+      .then(() => dispatch({type: SET_INTERVIEW, appointments: appointmentsDeleted, method: 'subtract', index: findDayByAppointment(id, state)}))
   }
 
 
