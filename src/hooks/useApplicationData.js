@@ -5,7 +5,11 @@ import { findDayByAppointment } from "../helpers/selectors";
 const SET_DAY = "SET_DAY";
 const SET_APPLICATION_DATA = "SET_APPLICATION_DATA";
 const SET_INTERVIEW = "SET_INTERVIEW";
-const UPDATE_INTERVIEW = "UPDATE_INTERVIEW";
+
+const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+webSocket.onopen = function(e) {
+  console.log('CONNECTED');
+}
 
 function reducer(state, action) {
   if (action.type === SET_DAY) {
@@ -82,10 +86,6 @@ export default function useApplicationData() {
         })
       })
       .then(() => {
-        const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
-        webSocket.onopen = function(e) {
-          console.log('CONNECTED');
-        }
         webSocket.onmessage = function(e) {
           let received = JSON.parse(e.data)
           if (received.type === "SET_INTERVIEW") {
@@ -122,8 +122,7 @@ export default function useApplicationData() {
     };
     
     return axios.put(`/api/appointments/${id}`, { interview })
-      // .then(() => webSocket.send(JSON.stringify({type: SET_INTERVIEW, appointment: added, id: id, method: 'book'})))
-      .then(() => dispatch({type: SET_INTERVIEW, appointment: added, id: id, method: 'book'}))
+      .then(() => webSocket.send(JSON.stringify({type: SET_INTERVIEW, appointment: added, id: id, method: 'book'})))
 
   }
 
@@ -134,7 +133,7 @@ export default function useApplicationData() {
     }
 
     return axios.delete(`/api/appointments/${id}`)
-      .then(() => dispatch({type: SET_INTERVIEW, appointment: deleted, id: id, method: 'cancel'}))
+      .then(() => webSocket.send(JSON.stringify({type: SET_INTERVIEW, appointment: deleted, id: id, method: 'cancel'})))
   }
 
 
