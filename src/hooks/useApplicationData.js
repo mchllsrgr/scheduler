@@ -10,7 +10,7 @@ function reducer(state, action) {
     return {...state, day: action.value};
   } else if (action.type === SET_APPLICATION_DATA) {
     return {...state, days: action.days, appointments: action.appointments, interviewers: action.interviewers};
-  } else if (action.type === SET_INTERVIEW && action.method === 'add') {
+  } else if (action.type === SET_INTERVIEW && action.method === 'book') {
     const oldSpots = state.days[action.index].spots;
     return {...state,
       appointments: action.appointments,
@@ -25,7 +25,7 @@ function reducer(state, action) {
         }
       })
     };
-  } else if (action.type === SET_INTERVIEW && action.method === 'subtract') {
+  } else if (action.type === SET_INTERVIEW && action.method === 'cancel') {
     const oldSpots = state.days[action.index].spots;
     return {...state,
       appointments: action.appointments,
@@ -69,7 +69,7 @@ export default function useApplicationData() {
       [id]: appointment
     };
     return axios.put(`/api/appointments/${id}`, { interview })
-      .then(() => dispatch({type: SET_INTERVIEW, appointments: appointments, method: 'add', index: findDayByAppointment(id, state)}))
+      .then(() => dispatch({type: SET_INTERVIEW, appointments: appointments, method: 'book', index: findDayByAppointment(id, state)}))
 
   }
 
@@ -83,7 +83,7 @@ export default function useApplicationData() {
       [id]: deleted
     }
     return axios.delete(`/api/appointments/${id}`)
-      .then(() => dispatch({type: SET_INTERVIEW, appointments: appointmentsDeleted, method: 'subtract', index: findDayByAppointment(id, state)}))
+      .then(() => dispatch({type: SET_INTERVIEW, appointments: appointmentsDeleted, method: 'cancel', index: findDayByAppointment(id, state)}))
   }
 
 
