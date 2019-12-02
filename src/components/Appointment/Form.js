@@ -27,6 +27,7 @@ export default function Form({ name:initialName, interviewer:initialInt, intervi
             placeholder="Enter Student Name"
             value={name}
             onChange={event => setName(event.target.value)}
+            data-testid="student-name-input"
           />
         </form>
         <InterviewerList interviewers={interviewers} value={interviewer} onChange={intId => setFormInterviewer(intId)} />
