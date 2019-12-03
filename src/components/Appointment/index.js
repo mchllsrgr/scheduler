@@ -53,7 +53,7 @@ export default function Appointment({id, time, interview, interviewers, bookInte
   }
   
   return (
-    <article className="appointment">
+    <article className="appointment" data-testid="appointment">
       <Header time={time} />
       {mode === EMPTY && <Empty onAdd={() => transition(CREATE)} />}
       {mode === SHOW && interview && (
