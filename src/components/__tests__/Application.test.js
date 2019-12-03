@@ -1,6 +1,6 @@
 import React from "react";
 
-import { render, cleanup, waitForElement, fireEvent, prettyDOM, getByText, getAllByTestId } from "@testing-library/react";
+import { render, cleanup, waitForElement, fireEvent, prettyDOM, getByText, getAllByTestId, getByAltText, getByPlaceholderText, queryByText } from "@testing-library/react";
 
 import Application from "components/Application";
 
@@ -20,15 +20,19 @@ describe("Application", () => {
     await waitForElement(() => getByText(container, "Archie Cohen"));
 
     const appointments = getAllByTestId(container, "appointment");
-    const appointment = getAllByTestId(container, "appointment")[0];
-    console.log(prettyDOM(appointment));
+    const appointment = appointments[0];
+    fireEvent.click(getByAltText(appointment, "Add"));
+    fireEvent.change(getByPlaceholderText(appointment, "Enter Student Name"), {
+      target: { value: "Lydia Miller-Jones" }
+    });
+    fireEvent.click(getByAltText(appointment, "Sylvia Palmer"));
+    fireEvent.click(getByText(appointment, "Save"));
+    expect(getByText(appointment, "Saving")).toBeInTheDocument();
 
-    // fireEvent.click(getByAltText("Add"));
-    // fireEvent.change(getByPlaceholderText("Enter Student Name"), {
-    //   target: { value: "Lydia Miller-Jones" }
-    // });
-    // fireEvent.click()
-
+    // tests below will not pass because app relies on websocket to update state
+    await waitForElement(() => getByText(appointment, "Lydia Miller-Jones"));
+    const day = getAllByTestId(container, "day").find(day => queryByText(day, "Monday"));
+    expect(getByText(day, "no spots remaining")).toBeInTheDocument();
   });
 
 })
