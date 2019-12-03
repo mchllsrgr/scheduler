@@ -5,11 +5,7 @@ import { findDayByAppointment } from "../helpers/selectors";
 const SET_DAY = "SET_DAY";
 const SET_APPLICATION_DATA = "SET_APPLICATION_DATA";
 const SET_INTERVIEW = "SET_INTERVIEW";
-
-const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
-webSocket.onopen = function(e) {
-  console.log('CONNECTED');
-}
+const RECALCULATE_SPOTS = "RECALCULATE_SPOTS";
 
 function reducer(state, action) {
   if (action.type === SET_DAY) {
@@ -17,45 +13,48 @@ function reducer(state, action) {
   } else if (action.type === SET_APPLICATION_DATA) {
     return {...state, days: action.days, appointments: action.appointments, interviewers: action.interviewers};
   } else if (action.type === SET_INTERVIEW && action.method === 'book') {
-    const dayIndex = findDayByAppointment(action.id, state);
-    const oldSpots = state.days[dayIndex].spots;
-    const updateAppointments = {
-      ...state.appointments,
-      [action.id]: action.appointment
-      }
-    return {...state,
-      appointments: updateAppointments,
-      days: state.days.map((item, index) => {
-        if (index !== dayIndex) {
-          return item
-        } else {
-          return {
-            ...item,
-            spots: oldSpots - 1
-          }
-        }
-      })
+    const added = {
+      ...state.appointments[action.id],
+      interview: action.interview
     };
-  } else if (action.type === SET_INTERVIEW && action.method === 'cancel') {
-    const dayIndex = findDayByAppointment(action.id, state);
-    const oldSpots = state.days[dayIndex].spots;
-    const updateAppointments = {
-      ...state.appointments,
-      [action.id]: action.appointment
-      }
+    const updateAdded = {
+    ...state.appointments,
+    [action.id]: added
+    };
     return {...state,
-      appointments: updateAppointments,
+      appointments: updateAdded};
+  } else if (action.type === SET_INTERVIEW && action.method === 'cancel') {
+    const deleted = {
+      ...state.appointments[action.id],
+      interview: action.interview
+    };
+    const updateDeleted = {
+    ...state.appointments,
+    [action.id]: deleted
+    };
+    return {...state,
+      appointments: updateDeleted}
+  } else if (action.type === RECALCULATE_SPOTS) {
+    const dayIndex = findDayByAppointment(action.id, state);
+    const appointmentIds = state.days[dayIndex].appointments;
+      let newSpots = 0;
+        for (let i = 0; i < appointmentIds.length; i++) {
+          if (state.appointments[appointmentIds[i]].interview === null) {
+            newSpots += 1;
+          }
+        }
+      return {...state, 
       days: state.days.map((item, index) => {
         if (index !== dayIndex) {
           return item
         } else {
           return {
             ...item,
-            spots: oldSpots + 1
+            spots: newSpots
           }
         }
-      })
-    }
+      })}
+
   } else {
     throw new Error(`Unsupported action type: ${action.type}`);
   }
@@ -86,20 +85,21 @@ export default function useApplicationData() {
         })
       })
       .then(() => {
+        const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+        webSocket.onopen = function(e) {
+          console.log('CONNECTED');
+        }
         webSocket.onmessage = function(e) {
           let received = JSON.parse(e.data)
           if (received.type === "SET_INTERVIEW") {
-            const updated = {
-              interview: received.interview
-            };
-
             let method = '';
             if (received.interview === null) {
               method = 'cancel';
             } else {
               method = 'book';
             }
-            dispatch({type: "SET_INTERVIEW", id: received.id, appointment: updated, method: method})
+            dispatch({ type: SET_INTERVIEW, id: received.id, interview: received.interview, method: method });
+            dispatch({ type: RECALCULATE_SPOTS, id: received.id });
           }
         }
       })
@@ -111,31 +111,23 @@ export default function useApplicationData() {
 
 
   // actions to change state
+
   function setDay(day) {
     dispatch({ type: "SET_DAY", value: day })
   };
 
-  function bookInterview(id, interview) {
-    const added = {
-      ...state.appointments[id],
-      interview: { ...interview }
-    };
-    
-    return axios.put(`/api/appointments/${id}`, { interview })
-      .then(() => webSocket.send(JSON.stringify({type: SET_INTERVIEW, appointment: added, id: id, method: 'book'})))
+  function bookInterview(bookId, interview) {
+    return axios.put(`/api/appointments/${bookId}`, { interview })
+    .then(() => dispatch({ type: SET_INTERVIEW, interview: interview, id: bookId, method: 'book' }))
+    .then(() => dispatch({ type: RECALCULATE_SPOTS, id: bookId }))
 
   }
 
-  function cancelInterview(id) {
-    const deleted = {
-      ...state.appointments[id],
-      interview: null
-    }
-
-    return axios.delete(`/api/appointments/${id}`)
-      .then(() => webSocket.send(JSON.stringify({type: SET_INTERVIEW, appointment: deleted, id: id, method: 'cancel'})))
+  function cancelInterview(cancelId, state) {
+    return axios.delete(`/api/appointments/${cancelId}`)
+      .then(() => dispatch({ type: SET_INTERVIEW, interview: null, id: cancelId, method: 'cancel' }))
+      .then(() => dispatch({ type: RECALCULATE_SPOTS, id: cancelId }))
   }
-
 
 
   return { state, setDay, bookInterview, cancelInterview }
