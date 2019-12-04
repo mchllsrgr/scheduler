@@ -46,7 +46,7 @@ export default function useApplicationData() {
             } else {
               method = 'book';
             }
-            dispatch({ type: SET_INTERVIEW, id: received.id, interview: received.interview, method: method });
+            dispatch({ type: SET_INTERVIEW, id: received.id, interview: received.interview });
             dispatch({ type: RECALCULATE_SPOTS, id: received.id });
           }
         }
@@ -66,14 +66,14 @@ export default function useApplicationData() {
 
   function bookInterview(bookId, interview) {
     return axios.put(`/api/appointments/${bookId}`, { interview })
-    .then(() => dispatch({ type: SET_INTERVIEW, interview: interview, id: bookId, method: 'book' }))
+    .then(() => dispatch({ type: SET_INTERVIEW, interview: interview, id: bookId }))
     .then(() => dispatch({ type: RECALCULATE_SPOTS, id: bookId }))
 
   }
 
   function cancelInterview(cancelId) {
     return axios.delete(`/api/appointments/${cancelId}`)
-      .then(() => dispatch({ type: SET_INTERVIEW, interview: null, id: cancelId, method: 'cancel' }))
+      .then(() => dispatch({ type: SET_INTERVIEW, interview: null, id: cancelId }))
       .then(() => dispatch({ type: RECALCULATE_SPOTS, id: cancelId }))
   }
 

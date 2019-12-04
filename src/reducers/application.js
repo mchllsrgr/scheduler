@@ -10,28 +10,17 @@ export default function reducer(state, action) {
     return {...state, day: action.value};
   } else if (action.type === SET_APPLICATION_DATA) {
     return {...state, days: action.days, appointments: action.appointments, interviewers: action.interviewers};
-  } else if (action.type === SET_INTERVIEW && action.method === 'book') {
-    const added = {
+  } else if (action.type === SET_INTERVIEW) {
+    const updated = {
       ...state.appointments[action.id],
       interview: action.interview
     };
-    const updateAdded = {
+    const updateAppointments = {
     ...state.appointments,
-    [action.id]: added
+    [action.id]: updated
     };
     return {...state,
-      appointments: updateAdded};
-  } else if (action.type === SET_INTERVIEW && action.method === 'cancel') {
-    const deleted = {
-      ...state.appointments[action.id],
-      interview: action.interview
-    };
-    const updateDeleted = {
-    ...state.appointments,
-    [action.id]: deleted
-    };
-    return {...state,
-      appointments: updateDeleted}
+      appointments: updateAppointments};
   } else if (action.type === RECALCULATE_SPOTS) {
     const dayIndex = findDayByAppointment(action.id, state);
     const appointmentIds = state.days[dayIndex].appointments;
