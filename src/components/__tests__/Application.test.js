@@ -39,7 +39,7 @@ describe("Application", () => {
     await waitForElement(() => getByText(container, "Archie Cohen"));
     
     const appointment = getAllByTestId(container, "appointment")
-    .find(appointment => queryByText(appointment, "Archie Cohen"));
+      .find(appointment => queryByText(appointment, "Archie Cohen"));
     fireEvent.click(getByAltText(appointment, "Delete"));
     expect(getByText(appointment, "Are you sure you would like to delete?")).toBeInTheDocument();
 
@@ -51,6 +51,24 @@ describe("Application", () => {
     expect(getByText(day, "2 spots remaining")).toBeInTheDocument();
   });
 
-  
+  it("loads data, edits an interview and keeps the spots remaining for Monday the same", async () => {
+    const { container } = render(<Application />);
+    await waitForElement(() => getByText(container, "Archie Cohen"));
+
+    const appointment = getAllByTestId(container, "appointment")
+      .find(appointment => queryByText(appointment, "Archie Cohen"));
+    fireEvent.click(getByAltText(appointment, "Edit"));
+    expect(getByText(appointment, "Save"));
+
+    fireEvent.click(getByAltText(appointment, "Sylvia Palmer"));
+    fireEvent.click(getByText(appointment, "Save"));
+    expect(getByText(appointment, "Saving")).toBeInTheDocument();
+
+    await waitForElement(() => getByText(appointment, "Sylvia Palmer"));
+    expect(getByText(appointment, "Sylvia Palmer")).toBeInTheDocument();
+    const day = getAllByTestId(container, "day").find(day => queryByText(day, "Monday"));
+    expect(getByText(day, "1 spot remaining")).toBeInTheDocument();
+
+  });
 
 })
