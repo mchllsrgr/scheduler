@@ -17,44 +17,38 @@ export default function useApplicationData() {
     interviewers: {}
   });
 
-    // api calls
-    useEffect(() => {
-      Promise.all([
-        Promise.resolve(axios.get('/api/days')),
-        Promise.resolve(axios.get('/api/appointments')),
-        Promise.resolve(axios.get('/api/interviewers'))
-      ])
-      .then((all) => {
-        dispatch({
-          type: SET_APPLICATION_DATA,
-          days: all[0].data,
-          appointments: all[1].data,
-          interviewers: all[2].data
-        })
+  // api calls
+  useEffect(() => {
+    Promise.all([
+      Promise.resolve(axios.get('/api/days')),
+      Promise.resolve(axios.get('/api/appointments')),
+      Promise.resolve(axios.get('/api/interviewers'))
+    ])
+    .then((all) => {
+      dispatch({
+        type: SET_APPLICATION_DATA,
+        days: all[0].data,
+        appointments: all[1].data,
+        interviewers: all[2].data
       })
-      .then(() => {
-        const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
-        webSocket.onopen = function(e) {
-          console.log('CONNECTED');
+    })
+    .then(() => {
+      const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+      webSocket.onopen = function(e) {
+        console.log('CONNECTED');
+      }
+      webSocket.onmessage = function(e) {
+        let received = JSON.parse(e.data)
+        if (received.type === "SET_INTERVIEW") {
+          dispatch({ type: SET_INTERVIEW, id: received.id, interview: received.interview });
+          dispatch({ type: RECALCULATE_SPOTS, id: received.id });
         }
-        webSocket.onmessage = function(e) {
-          let received = JSON.parse(e.data)
-          if (received.type === "SET_INTERVIEW") {
-            let method = '';
-            if (received.interview === null) {
-              method = 'cancel';
-            } else {
-              method = 'book';
-            }
-            dispatch({ type: SET_INTERVIEW, id: received.id, interview: received.interview });
-            dispatch({ type: RECALCULATE_SPOTS, id: received.id });
-          }
-        }
-      })
-      .catch((error) => console.log(error));
-        
-  
-    }, [])
+      }
+    })
+    .catch((error) => console.log(error));
+      
+
+  }, [])
 
 
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+// going forward and backward on an appointment view
 export default function useVisualMode(initial) {
   const [mode, setMode] = useState(initial);
   const [history, setHistory] = useState([initial]);

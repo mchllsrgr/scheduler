@@ -1,4 +1,8 @@
 # Interview Scheduler
+Scheduling app that allows users to book interviews with interviewers.
+
+## Final Product
+
 
 ## Setup
 
