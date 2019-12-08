@@ -18,8 +18,8 @@ export default function Form({ name:initialName, interviewer:initialInt, intervi
   }
 
   function validate() {
-    if (name === "") {
-      setError("Student name cannot be blank");
+    if (name === "" || interviewer === null) {
+      setError("You must enter a student name and interviewer");
       return;
     }
     setError("");
